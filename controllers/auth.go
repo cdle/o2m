@@ -73,7 +73,7 @@ type LoginRequest struct {
 // @router /login [post]
 func (c *AuthController) Login() {
 	ps := &LoginRequest{}
-	c.Logouted().Validate(ps)
+	c.Validate(ps)
 	a, err := models.FetchAuth(ps.ID)
 	c.ResponseError(err)
 	if a.GetKey() == ps.Key {
