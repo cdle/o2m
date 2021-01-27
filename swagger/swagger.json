@@ -1,0 +1,321 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "beego Test API",
+        "description": "beego has a very cool tools to autogenerate documents for your API",
+        "version": "1.0.0",
+        "termsOfService": "http://beego.me/",
+        "contact": {
+            "email": "astaxie@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "basePath": "/api",
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "用户登录",
+                "operationId": "AuthController.用户登录",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "用户登录",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "用户登录",
+                "operationId": "AuthController.用户登录",
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/auth/password": {
+            "put": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "修改密码",
+                "operationId": "AuthController.修改密码",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "修改密码",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "description": "客服注册",
+                "operationId": "AuthController.客服注册",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "客服注册",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/message/": {
+            "post": {
+                "tags": [
+                    "message"
+                ],
+                "description": "发送消息",
+                "operationId": "MessageController.发送消息",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "消息主体",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.SendMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/message/polling": {
+            "get": {
+                "tags": [
+                    "message"
+                ],
+                "description": "使用ajax轮询接收消息",
+                "operationId": "MessageController.接收消息",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "domain",
+                        "description": "域",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "random",
+                        "description": "固定随机字符串，用以标识当前会话的唯一性",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/message/record": {
+            "get": {
+                "tags": [
+                    "message"
+                ],
+                "description": "消息记录",
+                "operationId": "MessageController.消息记录",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "id",
+                        "description": "目标ID，默认获取自身",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/user/list": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "description": "用户列表",
+                "operationId": "UserController.用户列表",
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/user/{uid}": {
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "description": "更新用户信息",
+                "operationId": "UserController.更新用户信息",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "uid",
+                        "description": "用户ID,默认为自己的",
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "更新用户信息",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.UserUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "code.OK": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers.ChangePasswordRequest": {
+            "title": "ChangePasswordRequest",
+            "type": "object",
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.LoginRequest": {
+            "title": "LoginRequest",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.RegisterRequest": {
+            "title": "RegisterRequest",
+            "type": "object",
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.SendMessageRequest": {
+            "title": "SendMessageRequest",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "mark": {
+                    "type": "string"
+                },
+                "rid": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "type": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            }
+        },
+        "controllers.UserUpdateRequest": {
+            "title": "UserUpdateRequest",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "auth",
+            "description": "AuthController 鉴权控制器\n"
+        },
+        {
+            "name": "message",
+            "description": "MessageController 鉴权控制器\n"
+        },
+        {
+            "name": "user",
+            "description": "UserController 用户控制器\n"
+        }
+    ]
+}
