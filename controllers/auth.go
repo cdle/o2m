@@ -39,9 +39,9 @@ func (c *AuthController) Register() {
 
 //ChangePasswordRequest 修改密码
 type ChangePasswordRequest struct {
-	Email           string `json:"email" validate:"omitempty,email"`
-	Password        string `json:"password" validate:"required"`
-	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
+	Email    string `json:"email" validate:"omitempty,email"`
+	Password string `json:"password" validate:"required"`
+	// ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
 }
 
 // ChangePassword 修改密码
