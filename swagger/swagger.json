@@ -153,6 +153,12 @@
                     },
                     {
                         "in": "query",
+                        "name": "role",
+                        "description": "角色",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
                         "name": "random",
                         "description": "固定随机字符串，用以标识当前会话的唯一性",
                         "type": "string"

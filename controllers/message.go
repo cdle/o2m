@@ -57,6 +57,7 @@ func (c *MessageController) GetClientHistoryMessage() {
 // @Param domain query string false "域"
 // @Param email  query string false "邮箱"
 // @Param name   query string false "姓名"
+// @Param role   query string false "角色"
 // @Param random query string false "固定随机字符串，用以标识当前会话的唯一性"
 // @Success code.OK
 // @router /polling [get]
@@ -90,14 +91,15 @@ func (c *MessageController) ReceiveMessage() {
 }
 
 func (c *MessageController) getAuth() {
-	if c.GetString("role") != "" {
-		c.Logined()
-		c.Allow(models.UserRoleServer)
+	if v := c.GetSession("utp"); v != nil {
+		c.UID = c.GetSession("uid").(int32)
+		c.UTP = v.(int32)
+		if c.GetString("role") != "" {
+			c.Allow(models.UserRoleServer)
+		}
 		return
-	}
-	if v := c.GetSession("uid"); v != nil {
-		c.UID = v.(int32)
-		c.UTP = c.GetSession("utp").(int32)
+	} else if c.GetString("role") != "" {
+		c.Allow(models.UserRoleServer)
 		return
 	}
 	u := &models.User{
