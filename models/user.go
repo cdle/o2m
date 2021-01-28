@@ -30,6 +30,8 @@ type User struct {
 	Connections []Connection `json:"-" gorm:"-"`
 	//客服ID
 	ServerID int32 `json:"-"`
+	//商城
+	Mall string `json:"mall"`
 	//读写锁
 	*sync.RWMutex
 }

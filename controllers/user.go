@@ -50,3 +50,17 @@ func (c *UserController) UserUpdate() {
 func (c *UserController) UserList() {
 	c.Response(models.GetClients(c.UID))
 }
+
+// UserList 用户信息
+// @Title 用户信息
+// @Description 用户信息
+// @Success code.OK
+// @router /:uid [get]
+func (c *UserController) UserInfo() {
+	u, err := models.FetchUser(
+		c.GetPathInt32("uid"),
+	)
+	c.ResponseError(
+		err,
+	).Response(u)
+}

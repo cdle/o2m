@@ -104,6 +104,10 @@ paths:
         description: 角色
         type: string
       - in: query
+        name: mall
+        description: 商城
+        type: string
+      - in: query
         name: random
         description: 固定随机字符串，用以标识当前会话的唯一性
         type: string
@@ -125,6 +129,14 @@ paths:
         code.OK:
           description: ""
   /user/{uid}:
+    get:
+      tags:
+      - user
+      description: 用户信息
+      operationId: UserController.用户信息
+      responses:
+        code.OK:
+          description: ""
     put:
       tags:
       - user

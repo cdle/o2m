@@ -60,6 +60,7 @@ func (c *MessageController) GetClientHistoryMessage() {
 // @Param email  query string false "邮箱"
 // @Param name   query string false "姓名"
 // @Param role   query string false "角色"
+// @Param mall   query string false "商城"
 // @Param random query string false "固定随机字符串，用以标识当前会话的唯一性"
 // @Success code.OK
 // @router /polling [get]
@@ -110,6 +111,7 @@ func (c *MessageController) getAuth() {
 		IP:     c.Ctx.Request.RemoteAddr,
 		Email:  c.GetString("email"),
 		Name:   c.GetString("name"),
+		Mall:   c.GetString("mall"),
 	}
 	c.ResponseError(models.CreateUser(u, nil))
 	c.SetSession("uid", u.ID)
