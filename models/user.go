@@ -310,6 +310,13 @@ func (u *User) Note() {
 	}
 }
 
+//Note
+func (u *User) GetNoteAt() int64 {
+	u.RLock()
+	defer u.RUnlock()
+	return u.NoteAt
+}
+
 //GetLiveTime 获取活跃时间
 func (u *User) GetNoteTime() int64 {
 	u.RLock()

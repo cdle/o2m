@@ -130,6 +130,7 @@ func (a *AjaxPolling) Destroy() {
 							}
 						}
 						///
+						db.Table("users").Where("id = ?", u.ID).Update("note_at", u.GetNoteAt())
 						return
 					}
 				}
