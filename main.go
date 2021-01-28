@@ -12,6 +12,7 @@ func main() {
 	// if beego.BConfig.RunMode == "dev" {
 	beego.BConfig.WebConfig.DirectoryIndex = true
 	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
+	beego.BConfig.WebConfig.Session.SessionGCMaxLifetime = 360000
 	// }
 	beego.Run()
 }
