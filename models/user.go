@@ -273,8 +273,8 @@ func GetServerID(id int32, sid int32) int32 {
 	return sid
 }
 
-// GetServerID 获取客服ID
-func (u *User) GetServerID(id int32) int32 {
+// GetRandomServerID 获取随机客服ID
+func (u *User) GetRandomServerID(id int32) int32 {
 	if u.Role <= 2 {
 		return id
 	}
@@ -287,6 +287,13 @@ func (u *User) GetServerID(id int32) int32 {
 		u.Unlock()
 	}
 	return sid
+}
+
+// GetServerID 获取客服ID
+func (u *User) GetServerID() int32 {
+	u.RLock()
+	defer u.RUnlock()
+	return u.ServerID
 }
 
 //Note

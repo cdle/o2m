@@ -30,18 +30,16 @@ func (a *AjaxPolling) Init(u *User, random string) *AjaxPolling {
 	defer u.Unlock()
 	for _, connection := range u.Connections {
 		if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == random {
-			ajax.Lock()
-			defer ajax.Unlock()
-			a.ActiveAt = time.Now()
+			// fmt.Println("old")
 			return ajax
 		}
 	}
+	// fmt.Println("new")
 	u.Connections = append(u.Connections, a)
 	a.MessagesChan = make(chan *Message, 0)
 	a.RWMutex = new(sync.RWMutex)
 	a.User = u
 	a.Random = random
-	a.ActiveAt = time.Now()
 	defer a.Destroy()
 	return a
 }
@@ -62,6 +60,14 @@ func (a *AjaxPolling) GetActive() time.Time {
 	a.RLock()
 	defer a.RUnlock()
 	return a.ActiveAt
+}
+
+//Note 激活
+func (a *AjaxPolling) Note() {
+	a.GetUser().Note()
+	a.Lock()
+	a.ActiveAt = time.Now()
+	a.Unlock()
 }
 
 //GetUser 获取所属用户
@@ -100,15 +106,30 @@ func (a *AjaxPolling) GetIdleMessage() []*Message {
 //Destroy 销毁虚拟连接
 func (a *AjaxPolling) Destroy() {
 	go func() {
-		for {
-			<-time.After(time.Second * (WaittingTime + 7))
-			if time.Now().After(a.GetActive().Add((WaittingTime + 7))) {
-				u := a.GetUser()
+		for { //可以优化至用户
+			// fmt.Println("======")
+			<-time.After(time.Second)
+			u := a.GetUser()
+			if time.Now().After(a.GetActive().Add(time.Second + time.Millisecond*100)) {
 				u.Lock()
 				for k, connection := range u.Connections {
 					if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == a.GetRandom() {
 						u.Connections = append((u.Connections)[:k], (u.Connections)[k+1:]...)
 						u.Unlock()
+						///客户离线推送
+						// fmt.Println("/////", u.GetRole(), u.Online(), "destroy")
+						if u.GetRole() >= 3 && !u.Online() {
+							if sid := u.GetServerID(); sid != 0 {
+								s, _ := FetchUser(sid)
+								// fmt.Println(s)
+								s.Push(&Message{
+									Fid:  u.GetID(),
+									Type: 3,
+									Data: "offline",
+								})
+							}
+						}
+						///
 						return
 					}
 				}

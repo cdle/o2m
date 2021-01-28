@@ -71,7 +71,7 @@ func (u *User) HandleMessage(m *Message) error {
 	m.Time = time.Now().Local().UnixNano()
 	m.Fid = u.GetID()
 	// 分配客服
-	m.Rid = u.GetServerID(m.Rid)
+	m.Rid = u.GetRandomServerID(m.Rid)
 	if m.Rid == 0 {
 		return errors.New("客服不在线")
 	}

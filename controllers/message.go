@@ -68,8 +68,22 @@ func (c *MessageController) ReceiveMessage() {
 	c.getAuth()
 	ap := &models.AjaxPolling{}
 	u := c.User()
-	u.Note()
+	///客户上线推送
+	// fmt.Println("/////", u.GetRole(), u.Online(), "init")
+	if u.GetRole() >= 3 && !u.Online() {
+		// fmt.Println("-----")
+		if sid := u.GetServerID(); sid != 0 {
+			s, _ := models.FetchUser(sid)
+			s.Push(&models.Message{
+				Fid:  u.GetID(),
+				Type: 3,
+				Data: "online",
+			})
+		}
+	}
+	///
 	ap = ap.Init(u, c.GetString("random"))
+	ap.Note()
 	idleMessage := ap.GetIdleMessage()
 	if idleMessage != nil {
 		c.Response(idleMessage)
@@ -78,10 +92,10 @@ func (c *MessageController) ReceiveMessage() {
 	for {
 		select {
 		case m := <-ap.GetMessageChan():
-			u.Note()
+			ap.Note()
 			c.Response([]*models.Message{m})
 		case <-time.After(time.Second):
-			u.Note()
+			ap.Note()
 			if i == 0 {
 				c.Response()
 			} else {
