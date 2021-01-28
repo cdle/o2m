@@ -55,6 +55,8 @@ func (c *MessageController) GetClientHistoryMessage() {
 // @Title 接收消息
 // @Description 使用ajax轮询接收消息
 // @Param domain query string false "域"
+// @Param email  query string false "邮箱"
+// @Param name   query string false "姓名"
 // @Param random query string false "固定随机字符串，用以标识当前会话的唯一性"
 // @Success code.OK
 // @router /polling [get]
@@ -96,6 +98,8 @@ func (c *MessageController) getAuth() {
 	u := &models.User{
 		Domain: c.GetString("domain"),
 		IP:     c.Ctx.Request.RemoteAddr,
+		Email:  c.GetString("email"),
+		Name:   c.GetString("name"),
 	}
 	c.ResponseError(models.CreateUser(u, nil))
 	c.SetSession("uid", u.ID)

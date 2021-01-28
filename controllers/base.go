@@ -197,3 +197,17 @@ func (c *BaseController) GetQueryInt32(v string) int32 {
 	c.ResponseError(err)
 	return int32(i)
 }
+
+//Allow 权限控制
+func (c *BaseController) Allow(tps ...int32) *BaseController {
+	if c.UTP == models.UserRoleAdmin {
+		return nil
+	}
+	for _, tp := range tps {
+		if c.UTP == tp {
+			return c
+		}
+	}
+	c.ResponseError("无权限", NoAccessError)
+	return nil
+}

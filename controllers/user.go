@@ -11,7 +11,7 @@ type UserController struct {
 
 //NextPrepare next prepare
 func (c *UserController) NextPrepare() {
-	c.Logined()
+	c.Logined().Allow(models.UserRoleServer)
 }
 
 //UserUpdateRequest 更新用户信息请求

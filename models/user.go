@@ -34,6 +34,13 @@ type User struct {
 	*sync.RWMutex
 }
 
+const (
+	UserRoleAdmin   = 1
+	UserRoleServer  = 2
+	UserRoleClient  = 3
+	UserRoleTourist = 4
+)
+
 // CreateUser 创建用户
 func CreateUser(u *User, a *Auth) error {
 	if u.Role == 0 {

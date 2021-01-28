@@ -141,6 +141,18 @@
                     },
                     {
                         "in": "query",
+                        "name": "email",
+                        "description": "邮箱",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "name",
+                        "description": "姓名",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
                         "name": "random",
                         "description": "固定随机字符串，用以标识当前会话的唯一性",
                         "type": "string"
@@ -226,9 +238,6 @@
             "title": "ChangePasswordRequest",
             "type": "object",
             "properties": {
-                "confirm_password": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
@@ -253,9 +262,6 @@
             "title": "RegisterRequest",
             "type": "object",
             "properties": {
-                "confirm_password": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
