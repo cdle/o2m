@@ -92,6 +92,7 @@ func (c *MessageController) ReceiveMessage() {
 func (c *MessageController) getAuth() {
 	if c.GetString("role") != "" {
 		c.Logined()
+		c.Allow(models.UserRoleServer)
 		return
 	}
 	if v := c.GetSession("uid"); v != nil {
