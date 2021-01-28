@@ -72,18 +72,18 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/cdle/o2m/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/cdle/o2m/controllers:UserController"],
         beego.ControllerComments{
-            Method: "UserUpdate",
-            Router: "/?:uid([1-9][0-9]*)",
-            AllowHTTPMethods: []string{"put"},
+            Method: "UserInfo",
+            Router: "/?:uid([0-9]*)",
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["github.com/cdle/o2m/controllers:UserController"] = append(beego.GlobalControllerRouter["github.com/cdle/o2m/controllers:UserController"],
         beego.ControllerComments{
-            Method: "UserInfo",
+            Method: "UserUpdate",
             Router: "/?:uid([1-9][0-9]*)",
-            AllowHTTPMethods: []string{"get"},
+            AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
