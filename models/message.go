@@ -130,6 +130,6 @@ func readMessage(uid int32, mid int64) error {
 
 func GetClientHistoryMessage(cid int32) *[]Message {
 	ms := []Message{}
-	db.Where("fid = ? or rid = ?", cid, cid).Find(&ms)
+	db.Where("fid = ? or rid = ?", cid, cid).Order("id desc").Find(&ms)
 	return &ms
 }
