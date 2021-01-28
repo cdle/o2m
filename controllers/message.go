@@ -46,6 +46,7 @@ func (c *MessageController) SendMessage() {
 // @router /record [get]
 func (c *MessageController) GetClientHistoryMessage() {
 	c.Logined()
+	c.Ctx.Output.Header("uid", fmt.Sprint(c.UID))
 	if c.UTP >= 3 {
 		c.Response(models.GetClientHistoryMessage(c.UID))
 	} else {
@@ -99,7 +100,6 @@ func (c *MessageController) getAuth() {
 		if c.GetString("role") != "" {
 			c.Allow(models.UserRoleServer)
 		}
-		c.Ctx.Output.Header("uid", fmt.Sprint(c.UID))
 		return
 	} else if c.GetString("role") != "" {
 		c.Allow(models.UserRoleServer)
@@ -114,6 +114,5 @@ func (c *MessageController) getAuth() {
 	c.ResponseError(models.CreateUser(u, nil))
 	c.SetSession("uid", u.ID)
 	c.SetSession("utp", u.Role)
-	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
 	c.Response()
 }
