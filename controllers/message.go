@@ -65,7 +65,6 @@ func (c *MessageController) GetClientHistoryMessage() {
 // @router /polling [get]
 func (c *MessageController) ReceiveMessage() {
 	c.getAuth()
-
 	ap := &models.AjaxPolling{}
 	u := c.User()
 	u.Note()
@@ -100,6 +99,7 @@ func (c *MessageController) getAuth() {
 		if c.GetString("role") != "" {
 			c.Allow(models.UserRoleServer)
 		}
+		c.Ctx.Output.Header("uid", fmt.Sprint(c.UID))
 		return
 	} else if c.GetString("role") != "" {
 		c.Allow(models.UserRoleServer)
@@ -114,5 +114,6 @@ func (c *MessageController) getAuth() {
 	c.ResponseError(models.CreateUser(u, nil))
 	c.SetSession("uid", u.ID)
 	c.SetSession("utp", u.Role)
+	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
 	c.Response()
 }
