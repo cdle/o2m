@@ -55,7 +55,7 @@ func (c *UserController) UserList() {
 // @Description 用户信息
 // @Param uid path int false "用户ID,默认为自己的"
 // @Success code.OK
-// @router /?:uid [get]
+// @router /?:uid([1-9][0-9]*) [get]
 func (c *UserController) UserInfo() {
 	uid := c.GetPathInt32("uid")
 	if uid == 0 {
