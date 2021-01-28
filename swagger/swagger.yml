@@ -134,6 +134,12 @@ paths:
       - user
       description: 用户信息
       operationId: UserController.用户信息
+      parameters:
+      - in: path
+        name: uid
+        description: 用户ID,默认为自己的
+        type: integer
+        format: int64
       responses:
         code.OK:
           description: ""

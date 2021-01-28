@@ -51,14 +51,18 @@ func (c *UserController) UserList() {
 	c.Response(models.GetClients(c.UID))
 }
 
-// UserList 用户信息
 // @Title 用户信息
 // @Description 用户信息
+// @Param uid path int false "用户ID,默认为自己的"
 // @Success code.OK
-// @router /:uid [get]
+// @router /?:uid([1-9][0-9]*) [get]
 func (c *UserController) UserInfo() {
+	uid := c.GetPathInt32("uid")
+	if uid == 0 {
+		uid = c.UID
+	}
 	u, err := models.FetchUser(
-		c.GetPathInt32("uid"),
+		uid,
 	)
 	c.ResponseError(
 		err,
