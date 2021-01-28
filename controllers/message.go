@@ -90,6 +90,10 @@ func (c *MessageController) ReceiveMessage() {
 }
 
 func (c *MessageController) getAuth() {
+	if c.GetString("role") != "" {
+		c.Logined()
+		return
+	}
 	if v := c.GetSession("uid"); v != nil {
 		c.UID = v.(int32)
 		c.UTP = c.GetSession("utp").(int32)
