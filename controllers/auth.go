@@ -23,7 +23,7 @@ type RegisterRequest struct {
 // @router /register [post]
 func (c *AuthController) Register() {
 	ps := &RegisterRequest{}
-	c.Logouted().Validate(ps)
+	c.Validate(ps)
 	err := models.CreateUser(&models.User{
 		Name:  ps.Name,
 		Email: ps.Email,
