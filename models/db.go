@@ -2,7 +2,7 @@
 package models
 
 import (
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -23,8 +23,11 @@ func init() {
 	// }
 	// db, err = gorm.Open("mysql", "root:123456tT(hass.imdraw.com:3306)/o2m?charset=utf8&parseTime=True&loc=Local")
 	// db, err = gorm.Open("sqlite3", "o2m.db")
-	dsn := "root:AsdF321root@tcp(io.imdraw.com:3306)/o2m?charset=utf8&parseTime=True&loc=Local"
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	// dsn := "root:AsdF321root@tcp(io.imdraw.com:3306)/o2m?charset=utf8&parseTime=True&loc=Local"
+	// db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	// 	Logger: logger.Default.LogMode(logger.Info),
+	// })
+	db, err = gorm.Open(sqlite.Open("o2m.db"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
