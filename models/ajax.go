@@ -20,6 +20,8 @@ type AjaxPolling struct {
 	IdleMessage []*Message
 	//读写锁
 	*sync.RWMutex
+	//请求次数
+	Times int
 }
 
 const WaittingTime = 5
@@ -31,6 +33,7 @@ func (a *AjaxPolling) Init(u *User, random string) *AjaxPolling {
 	for _, connection := range u.Connections {
 		if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == random {
 			// fmt.Println("old")
+			ajax.Times++
 			return ajax
 		}
 	}
@@ -40,6 +43,7 @@ func (a *AjaxPolling) Init(u *User, random string) *AjaxPolling {
 	a.RWMutex = new(sync.RWMutex)
 	a.User = u
 	a.Random = random
+	a.Times++
 	defer a.Destroy()
 	return a
 }
@@ -75,6 +79,20 @@ func (a *AjaxPolling) GetUser() *User {
 	a.RLock()
 	defer a.RUnlock()
 	return a.User
+}
+
+//GetTimes 获取次数
+func (a *AjaxPolling) GetTimes() int {
+	a.RLock()
+	defer a.RUnlock()
+	return a.Times
+}
+
+//GetTimes 获取次数
+func (a *AjaxPolling) AddTimes() {
+	a.Lock()
+	defer a.Unlock()
+	a.Times++
 }
 
 //GetRandom 获取随机字符
