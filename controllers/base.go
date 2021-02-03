@@ -16,14 +16,6 @@ var validate *validator.Validate
 var trans ut.Translator
 
 func init() {
-	beego.BConfig.WebConfig.AutoRender = false
-	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.DirectoryIndex = true
-	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
-	beego.BConfig.WebConfig.Session.SessionProvider = "file"
-	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./session"
-	beego.BConfig.WebConfig.Session.SessionGCMaxLifetime = 360000
-
 	//验证器注册翻译器
 	var zhCh = zh.New()
 	validate = validator.New()
