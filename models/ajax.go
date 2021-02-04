@@ -128,7 +128,7 @@ func (a *AjaxPolling) Destroy() {
 			// fmt.Println("======")
 			<-time.After(time.Second)
 			u := a.GetUser()
-			if time.Now().After(a.GetActive().Add(time.Second + time.Millisecond*100)) {
+			if time.Now().After(a.GetActive().Add(5*time.Second + time.Millisecond*100)) {
 				u.Lock()
 				for k, connection := range u.Connections {
 					if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == a.GetRandom() {

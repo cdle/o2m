@@ -85,7 +85,7 @@ func (u *User) HandleMessage(m *Message) error {
 			Data: "客服不在线,请过几分钟后再访问",
 		}
 		r.ID = generatorNextMessageID()
-		r.Readers = fmt.Sprint(r.Fid)
+		// r.Readers = fmt.Sprint(r.Fid)
 		u.Push(r)
 		chatStoreChan <- r
 	} else {
