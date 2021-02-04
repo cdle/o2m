@@ -72,21 +72,36 @@ func (u *User) HandleMessage(m *Message) error {
 	m.Fid = u.GetID()
 	// 分配客服
 	m.Rid = u.GetRandomServerID(m.Rid)
-	if m.Rid == 0 {
-		return errors.New("客服不在线")
-	}
-	r, err := FetchUser(m.Rid)
-	if err != nil {
-		return err
-	}
-	if m.Type == 0 {
+	// if m.Rid == 0 {
+	// 	return errors.New("客服不在线")
+	// }
+	if m.Rid == 0 && m.Type == 0 {
 		m.ID = generatorNextMessageID()
 		m.Readers = fmt.Sprint(m.Fid)
-	}
-	r.Push(m)
-	u.Push(m)
-	if m.Type < 2 {
+		u.Push(m)
 		chatStoreChan <- m
+		r := &Message{
+			Rid:  u.GetID(),
+			Data: "客服不在线,请过几分钟后再访问",
+		}
+		r.ID = generatorNextMessageID()
+		r.Readers = fmt.Sprint(r.Fid)
+		u.Push(r)
+		chatStoreChan <- r
+	} else {
+		r, err := FetchUser(m.Rid)
+		if err != nil {
+			return err
+		}
+		if m.Type == 0 {
+			m.ID = generatorNextMessageID()
+			m.Readers = fmt.Sprint(m.Fid)
+		}
+		r.Push(m)
+		u.Push(m)
+		if m.Type < 2 {
+			chatStoreChan <- m
+		}
 	}
 	return nil
 }

@@ -83,6 +83,9 @@ func (c *MessageController) ReceiveMessage() {
 	}
 	///
 	ap = ap.Init(u, c.GetString("random"))
+	if ap.GetTimes() == 1 {
+		c.Response()
+	}
 	ap.Note()
 	idleMessage := ap.GetIdleMessage()
 	if idleMessage != nil {
