@@ -1,0 +1,198 @@
+{
+  "id": "1312252",
+  "name": "客服系统",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "客服系统所需图标",
+  "glyphs": [
+    {
+      "icon_id": "12981338",
+      "name": "下拉",
+      "font_class": "-dropdown",
+      "unicode": "e62a",
+      "unicode_decimal": 58922
+    },
+    {
+      "icon_id": "11133286",
+      "name": "ic_lock_24px",
+      "font_class": "-pwd",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
+      "icon_id": "10293054",
+      "name": "xls",
+      "font_class": "-xls",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "6233080",
+      "name": "DOC图标",
+      "font_class": "-doc",
+      "unicode": "e63c",
+      "unicode_decimal": 58940
+    },
+    {
+      "icon_id": "6233085",
+      "name": "PDF图标",
+      "font_class": "-pdf",
+      "unicode": "e63f",
+      "unicode_decimal": 58943
+    },
+    {
+      "icon_id": "6233095",
+      "name": "TXT图标",
+      "font_class": "-txt",
+      "unicode": "e645",
+      "unicode_decimal": 58949
+    },
+    {
+      "icon_id": "6233096",
+      "name": "ZIP图标",
+      "font_class": "-zip",
+      "unicode": "e646",
+      "unicode_decimal": 58950
+    },
+    {
+      "icon_id": "10066425",
+      "name": "ic_search",
+      "font_class": "-search",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "10036393",
+      "name": "ic_zuo1",
+      "font_class": "-less-than",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "10036394",
+      "name": "icon-zuo",
+      "font_class": "-double-less-than",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "10036395",
+      "name": "icon-you",
+      "font_class": "-double-great-than",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "10036396",
+      "name": "icon-you2",
+      "font_class": "-right-stop",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "10036397",
+      "name": "ic_you1",
+      "font_class": "-great-than",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    },
+    {
+      "icon_id": "10036398",
+      "name": "ic_zuo2",
+      "font_class": "-left-stop",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "10048771",
+      "name": "menu-grid",
+      "font_class": "-menu",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "1488514",
+      "name": "  Error",
+      "font_class": "-error",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "4358823",
+      "name": "用户",
+      "font_class": "-user",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "2856816",
+      "name": "对",
+      "font_class": "-true",
+      "unicode": "e647",
+      "unicode_decimal": 58951
+    },
+    {
+      "icon_id": "3856035",
+      "name": "客服 (1)",
+      "font_class": "-server",
+      "unicode": "e63b",
+      "unicode_decimal": 58939
+    },
+    {
+      "icon_id": "4642599",
+      "name": "右",
+      "font_class": "-thin-double-great-than",
+      "unicode": "e644",
+      "unicode_decimal": 58948
+    },
+    {
+      "icon_id": "6400270",
+      "name": "日历",
+      "font_class": "-calendar",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "8323334",
+      "name": "左",
+      "font_class": "-thin-double-less-than",
+      "unicode": "e807",
+      "unicode_decimal": 59399
+    },
+    {
+      "icon_id": "8348359",
+      "name": "关 闭",
+      "font_class": "-close",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "9462478",
+      "name": "右",
+      "font_class": "-thin-great-than",
+      "unicode": "e726",
+      "unicode_decimal": 59174
+    },
+    {
+      "icon_id": "9462482",
+      "name": "左",
+      "font_class": "-thin-less-than",
+      "unicode": "e727",
+      "unicode_decimal": 59175
+    },
+    {
+      "icon_id": "10001428",
+      "name": "photography-frame",
+      "font_class": "-photo",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "10001433",
+      "name": "circular-wall-clock",
+      "font_class": "-clock",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    }
+  ]
+}

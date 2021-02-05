@@ -18,7 +18,7 @@ type SendMessageRequest struct {
 	Rid  int32  `json:"rid"`
 	Data string `json:"data" validate:"required,lt=50000"`
 	Mark string `json:"mark" validate:"omitempty,lt=32"`
-	Type int32  `json:"type" validate:"omitempty,oneof=0 1 2"`
+	Type int32  `json:"type" validate:"omitempty,oneof=0 1 2 3 4 5 6"`
 }
 
 // @Title 发送消息

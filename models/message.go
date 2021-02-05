@@ -131,7 +131,11 @@ func readMessage(uid int32, mid int64) error {
 			return errors.New("已经阅读过消息")
 		}
 	}
-	m.Readers += "," + uidS
+	if m.Readers != "" {
+		m.Readers += "," + uidS
+	} else {
+		m.Readers = uidS
+	}
 	err = tx.Model(&m).Update("readers", m.Readers).Error
 	if err != nil {
 		tx.Rollback()
