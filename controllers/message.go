@@ -83,6 +83,7 @@ func (c *MessageController) ReceiveMessage() {
 	}
 	///
 	ap = ap.Init(u, c.GetString("random"))
+	c.Ctx.Output.Header("Request-Times", fmt.Sprint(ap.GetTimes()))
 	if ap.GetTimes() == 1 {
 		c.Response()
 	}
@@ -134,5 +135,5 @@ func (c *MessageController) getAuth() {
 	c.SetSession("uid", u.ID)
 	c.SetSession("utp", u.Role)
 	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
-	c.Response()
+	// c.Response()
 }

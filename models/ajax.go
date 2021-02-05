@@ -12,6 +12,8 @@ type AjaxPolling struct {
 	User *User
 	//随机字符
 	Random string
+	// //唯一ID
+	// UUID string
 	//上次活跃
 	ActiveAt time.Time
 	//接收消息管道
@@ -43,6 +45,7 @@ func (a *AjaxPolling) Init(u *User, random string) *AjaxPolling {
 	a.RWMutex = new(sync.RWMutex)
 	a.User = u
 	a.Random = random
+	// a.UUID = GeneratorUUID()
 	a.Times++
 	defer a.Destroy()
 	return a
@@ -65,6 +68,13 @@ func (a *AjaxPolling) GetActive() time.Time {
 	defer a.RUnlock()
 	return a.ActiveAt
 }
+
+// //GetActive 获取激活时间
+// func (a *AjaxPolling) GetUUID() string {
+// 	a.RLock()
+// 	defer a.RUnlock()
+// 	return a.UUID
+// }
 
 //Note 激活
 func (a *AjaxPolling) Note() {

@@ -2,6 +2,7 @@
 package models
 
 import (
+	"github.com/gofrs/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -49,4 +50,10 @@ func init() {
 	}
 	initMaxMessageID()
 	storeChat()
+}
+
+//GeneratorUUID 生成uuid
+func GeneratorUUID() string {
+	v, _ := uuid.NewV4()
+	return v.String()
 }

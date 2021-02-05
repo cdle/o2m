@@ -9,6 +9,7 @@ require (
 	github.com/cdle/steady v1.0.20
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/leodido/go-urn v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
