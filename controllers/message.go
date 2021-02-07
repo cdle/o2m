@@ -84,7 +84,7 @@ func (c *MessageController) ReceiveMessage() {
 	///
 	ap = ap.Init(u, c.GetString("random"))
 	c.Ctx.Output.Header("Request-Times", fmt.Sprint(ap.GetTimes()))
-	if ap.GetTimes() == 1 {
+	if ap.GetTimes() == 1 && u.GetRole() >= 3 {
 		c.Response(models.GetClientHistoryMessage(c.UID))
 	}
 	ap.Note()
