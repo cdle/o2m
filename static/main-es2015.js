@@ -339,7 +339,7 @@ class ClientComponent {
         this.files = [];
         // 编辑框数组
         this.editData = [];
-        this.unread = 0;
+        this.unreadOption = { unread: 0, scrollHeight: 0 };
     }
     ngOnInit() {
         // domain=xx&mall=xxx
@@ -405,7 +405,7 @@ ClientComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineCo
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](11);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("chatList", ctx.chatList);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("who", ctx)("unread", ctx.unread);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("who", ctx)("unread", ctx.unreadOption.unread);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("who", ctx);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
@@ -630,6 +630,7 @@ class ComService {
             let ret = res.body;
             let isServer = 'rid' in obj;
             this.doHttpResponse(ret, (data) => {
+                console.log('data: ', data);
                 if (isNewConnect) {
                     if (!isServer) {
                         data.forEach((d) => {
@@ -704,71 +705,184 @@ class ComService {
         data.forEach((d) => {
             let fid = d.fid;
             let isISend = fid === obj.myID;
-            if (d.type === 3) {
-                isISend &&
-                    this.showAlert('游客' + d.fid + (d.data === 'online' ? '上' : '离') + '线');
-                // 客服端 处理一下用户列表用户上下线显示
-                if (isServer) {
-                    let i = obj.userList.findIndex((x) => x.id === d.fid);
-                    i > -1 && (obj.userList[i].state = d.data === 'online');
-                    console.log('type=3', i, d, obj.userList[i].state);
-                }
-            }
-            else {
-                this.attachSPT(obj, d, isServer);
-                if (!isISend) {
-                    // 不是我发送的消息-判断是客服端还是服务端
-                    if (isServer) {
-                        // 客服端-判断发送方是正在谈话的一方吗
-                        let isCuUserSend = fid === (obj.user && obj.user.id);
-                        d.state = true;
-                        if (isCuUserSend) {
-                            obj.chatList.push(d);
-                            let name = obj.user && obj.user.name
-                                ? '用户' + obj.user.name
-                                : '游客' + fid;
-                            !this.isWindowActive &&
-                                this.deskNotify('消息提示', name + '发来一条新消息');
-                        }
-                        else {
-                            // 不是当前用户发来的消息-判断该用户是否已经在用户列表了
-                            let userIndex = obj.userList.findIndex((u) => u.id === fid);
-                            let isInUserList = userIndex > -1;
-                            if (isInUserList) {
-                                let name = obj.userList[userIndex] && obj.userList[userIndex].name
-                                    ? '用户' + obj.userList[userIndex].name
-                                    : '游客' + fid;
-                                this.deskNotify('消息提示', name + '发来一条新消息');
-                            }
-                            else {
-                                // 不在用户列表-获取用户信息-推送用户到列表
-                                this.getUserInfo(fid, (userInfo) => {
-                                    obj.userList.unshift(userInfo);
-                                    let name = userInfo.name
-                                        ? '用户' + userInfo.name
-                                        : '游客' + fid;
-                                    d.state = true;
-                                    !this.isWindowActive &&
-                                        this.deskNotify('消息提示', name + '发来一条新消息');
-                                });
-                            }
-                        }
-                    }
-                    else {
-                        // 客户端-显示在左侧
-                        obj.chatList.push(d);
-                        !this.isWindowActive &&
-                            this.deskNotify('消息提示', '有一条新消息回复');
-                    }
-                }
-                else {
-                    // 是我发送的，先看在不在列表中，不在的话就推到列表中
-                    let i = obj.chatList.findIndex((x) => x.mark === d.mark);
-                    i === -1 && obj.chatList.push(d);
-                }
+            let type = d.type;
+            switch (type) {
+                // 普通消息
+                case 0:
+                    this.doType0(isISend, obj, d, isServer);
+                    break;
+                // 已读未读消息
+                case 1:
+                    this.doType1(d, obj, isISend, isISend);
+                    break;
+                // 上下线消息
+                case 3:
+                    this.doType3(isISend, d, isServer, obj);
+                    break;
             }
         });
         obj.toBottom();
+    }
+    // 处理已读未读消息
+    doType1(d, obj, isISend, isServer) {
+        // 已读未读消息
+        if (!isISend) {
+            if (isServer) {
+                // 服务端
+                // 发来的是自己吗-是的话就不用改变-不是就要判断
+                if (!isISend) {
+                    // 判断发来的是当前用户吗
+                    let isCuUserSend = obj.user.id === d.fid;
+                    if (isCuUserSend) {
+                        // 当前用户发来的设置已读
+                        let i = obj.chatList.findIndex(x => x.id === d.id);
+                        i > -1 && (obj.chatList[i].readed = true);
+                    }
+                    else {
+                        // 判断发来的是在用户列表的用户吗
+                        let isUserInList = obj.userList.findIndex(x => x.id === d.fid) > -1;
+                        if (isUserInList) {
+                            // 是列表中的用户发来的已读消息-不用处理
+                            console.log('是列表中的用户发来的已读消息-不用处理: ');
+                        }
+                        else {
+                            // 不是列表总的用户发来的-用户入用户列表？不处理-看是否有这个用户
+                            console.log('不是列表总的用户发来的-用户入用户列表？不处理-看是否有这个用户: ');
+                        }
+                    }
+                }
+            }
+            else {
+                // 客户端
+                let i = obj.chatList.findeIndex((x) => x.id === d.id);
+                i > -1 && (obj.chatList[i].readed = true);
+            }
+        }
+    }
+    // 处理上下限消息
+    doType3(isISend, d, isServer, obj) {
+        isISend &&
+            this.showAlert('游客' + d.fid + (d.data === 'online' ? '上' : '离') + '线');
+        // 客服端 处理一下用户列表用户上下线显示
+        if (isServer) {
+            let i = obj.userList.findIndex((x) => x.id === d.fid);
+            i > -1 && (obj.userList[i].state = d.data === 'online');
+            console.log('type=3', i, d, obj.userList[i].state);
+        }
+    }
+    // 处理普通消息
+    doType0(isISend, obj, d, isServer) {
+        let fid = d.fid;
+        this.attachSPT(obj, d, isServer);
+        if (!isISend) {
+            // 不是我发送的消息-判断是客服端还是服务端
+            let chatScrollTop = obj.chatElem.scrollTop;
+            if (isServer) {
+                // 客服端-判断发送方是正在谈话的一方吗
+                let isCuUserSend = fid === (obj.user && obj.user.id);
+                d.state = true;
+                if (isCuUserSend) {
+                    obj.chatList.push(d);
+                    let name = obj.user && obj.user.name
+                        ? '用户' + obj.user.name
+                        : '游客' + fid;
+                    !this.isWindowActive &&
+                        this.deskNotify('消息提示', name + '发来一条新消息');
+                    if (this.isWindowActive) {
+                        // 当前用户激活窗口
+                        if (chatScrollTop === 0) {
+                            // 直接发送已读消息
+                            this.sendMsg({ id: d.id, rid: obj.user.id, type: 1 });
+                        }
+                        else {
+                            // 有滚动条-直接设置未读已读
+                            obj.user.unreadOption = obj.user.unreadOption || {};
+                            obj.user.unreadOption.unread++;
+                            obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                        }
+                    }
+                    else {
+                        // 未激活-直接设置未读已读
+                        obj.user.unreadOption = obj.user.unreadOption || {};
+                        obj.user.unreadOption.unread++;
+                        obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                    }
+                }
+                else {
+                    // 不是当前用户发来的消息-判断该用户是否已经在用户列表了
+                    let userIndex = obj.userList.findIndex((u) => u.id === fid);
+                    let isInUserList = userIndex > -1;
+                    if (isInUserList) {
+                        let name = obj.userList[userIndex] && obj.userList[userIndex].name
+                            ? '用户' + obj.userList[userIndex].name
+                            : '游客' + fid;
+                        this.deskNotify('消息提示', name + '发来一条新消息');
+                        obj.userList[userIndex].unreadOption = obj.userList[userIndex].unreadOption || {};
+                        obj.user.unreadOption.unread++;
+                        obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                    }
+                    else {
+                        // 不在用户列表-获取用户信息-推送用户到列表
+                        this.getUserInfo(fid, (userInfo) => {
+                            obj.userList.unshift(userInfo);
+                            let name = userInfo.name
+                                ? '用户' + userInfo.name
+                                : '游客' + fid;
+                            d.state = true;
+                            !this.isWindowActive &&
+                                this.deskNotify('消息提示', name + '发来一条新消息');
+                            userInfo.unreadOption = userInfo.unreadOption || {};
+                            userInfo.unreadOption.unread++;
+                            userInfo.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                        });
+                    }
+                }
+            }
+            else {
+                // 客户端-显示在左侧
+                obj.chatList.push(d);
+                !this.isWindowActive &&
+                    this.deskNotify('消息提示', '有一条新消息回复');
+                // 给加未读和设置已读消息
+                if (this.isWindowActive) {
+                    // 窗口激活
+                    if (chatScrollTop === 0) {
+                        // 窗口没有滚动条-直接阅读了消息-发送已阅读消息
+                        this.sendMsg({ id: d.id, type: 1 });
+                        d.readed = true;
+                    }
+                    else {
+                        // 有滚动条- 设置未读消息数
+                        obj.unreadOption.unread++;
+                        obj.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                    }
+                }
+                else {
+                    // 窗口未激活-增加未读
+                    obj.unreadOption.unread++;
+                    obj.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                }
+            }
+        }
+        else {
+            // 是我发送的，先看在不在列表中，不在的话就推到列表中      
+            let i = obj.chatList.findIndex((x) => x.mark === d.mark);
+            i === -1 && obj.chatList.push(d);
+        }
+    }
+    // 处理历史消息
+    doHistory(data, isServer) {
+        // 设置未读数-和对方一堆信息标志
+        // 客户端 判断最后一条消息是不是客户消息，是的话默认全部客服unreadOption.unread=0,否则看最后一条消息是不是两个读者，是的话就是chatList[len-1]:unread
+        let lastMsg = data[data.length - 1];
+        console.log('lastMsg: ', lastMsg);
+        data.foreach(el => {
+            if (isServer) {
+            }
+            else {
+                // 客户端
+            }
+        });
     }
     // 获取用户列表
     getUserList(success) {

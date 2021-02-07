@@ -679,7 +679,10 @@
           this.files = []; // 编辑框数组
 
           this.editData = [];
-          this.unread = 0;
+          this.unreadOption = {
+            unread: 0,
+            scrollHeight: 0
+          };
         }
 
         _createClass(ClientComponent, [{
@@ -813,7 +816,7 @@
 
             _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
 
-            _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("who", ctx)("unread", ctx.unread);
+            _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("who", ctx)("unread", ctx.unreadOption.unread);
 
             _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
 
@@ -1118,6 +1121,8 @@
               var isServer = ('rid' in obj);
 
               _this9.doHttpResponse(ret, function (data) {
+                console.log('data: ', data);
+
                 if (isNewConnect) {
                   if (!isServer) {
                     data.forEach(function (d) {
@@ -1204,101 +1209,237 @@
             data.forEach(function (d) {
               var fid = d.fid;
               var isISend = fid === obj.myID;
+              var type = d.type;
 
-              if (d.type === 3) {
-                isISend && _this11.showAlert('游客' + d.fid + (d.data === 'online' ? '上' : '离') + '线'); // 客服端 处理一下用户列表用户上下线显示
+              switch (type) {
+                // 普通消息
+                case 0:
+                  _this11.doType0(isISend, obj, d, isServer);
 
-                if (isServer) {
-                  var i = obj.userList.findIndex(function (x) {
-                    return x.id === d.fid;
-                  });
-                  i > -1 && (obj.userList[i].state = d.data === 'online');
-                  console.log('type=3', i, d, obj.userList[i].state);
-                }
-              } else {
-                _this11.attachSPT(obj, d, isServer);
+                  break;
+                // 已读未读消息
 
-                if (!isISend) {
-                  // 不是我发送的消息-判断是客服端还是服务端
-                  if (isServer) {
-                    // 客服端-判断发送方是正在谈话的一方吗
-                    var isCuUserSend = fid === (obj.user && obj.user.id);
-                    d.state = true;
+                case 1:
+                  _this11.doType1(d, obj, isISend, isISend);
 
-                    if (isCuUserSend) {
-                      obj.chatList.push(d);
-                      var name = obj.user && obj.user.name ? '用户' + obj.user.name : '游客' + fid;
-                      !_this11.isWindowActive && _this11.deskNotify('消息提示', name + '发来一条新消息');
-                    } else {
-                      // 不是当前用户发来的消息-判断该用户是否已经在用户列表了
-                      var userIndex = obj.userList.findIndex(function (u) {
-                        return u.id === fid;
-                      });
-                      var isInUserList = userIndex > -1;
+                  break;
+                // 上下线消息
 
-                      if (isInUserList) {
-                        var _name = obj.userList[userIndex] && obj.userList[userIndex].name ? '用户' + obj.userList[userIndex].name : '游客' + fid;
+                case 3:
+                  _this11.doType3(isISend, d, isServer, obj);
 
-                        _this11.deskNotify('消息提示', _name + '发来一条新消息');
-                      } else {
-                        // 不在用户列表-获取用户信息-推送用户到列表
-                        _this11.getUserInfo(fid, function (userInfo) {
-                          obj.userList.unshift(userInfo);
-                          var name = userInfo.name ? '用户' + userInfo.name : '游客' + fid;
-                          d.state = true;
-                          !_this11.isWindowActive && _this11.deskNotify('消息提示', name + '发来一条新消息');
-                        });
-                      }
-                    }
-                  } else {
-                    // 客户端-显示在左侧
-                    obj.chatList.push(d);
-                    !_this11.isWindowActive && _this11.deskNotify('消息提示', '有一条新消息回复');
-                  }
-                } else {
-                  // 是我发送的，先看在不在列表中，不在的话就推到列表中
-                  var _i = obj.chatList.findIndex(function (x) {
-                    return x.mark === d.mark;
-                  });
-
-                  _i === -1 && obj.chatList.push(d);
-                }
+                  break;
               }
             });
             obj.toBottom();
+          } // 处理已读未读消息
+
+        }, {
+          key: "doType1",
+          value: function doType1(d, obj, isISend, isServer) {
+            // 已读未读消息
+            if (!isISend) {
+              if (isServer) {
+                // 服务端
+                // 发来的是自己吗-是的话就不用改变-不是就要判断
+                if (!isISend) {
+                  // 判断发来的是当前用户吗
+                  var isCuUserSend = obj.user.id === d.fid;
+
+                  if (isCuUserSend) {
+                    // 当前用户发来的设置已读
+                    var i = obj.chatList.findIndex(function (x) {
+                      return x.id === d.id;
+                    });
+                    i > -1 && (obj.chatList[i].readed = true);
+                  } else {
+                    // 判断发来的是在用户列表的用户吗
+                    var isUserInList = obj.userList.findIndex(function (x) {
+                      return x.id === d.fid;
+                    }) > -1;
+
+                    if (isUserInList) {
+                      // 是列表中的用户发来的已读消息-不用处理
+                      console.log('是列表中的用户发来的已读消息-不用处理: ');
+                    } else {
+                      // 不是列表总的用户发来的-用户入用户列表？不处理-看是否有这个用户
+                      console.log('不是列表总的用户发来的-用户入用户列表？不处理-看是否有这个用户: ');
+                    }
+                  }
+                }
+              } else {
+                // 客户端
+                var _i = obj.chatList.findeIndex(function (x) {
+                  return x.id === d.id;
+                });
+
+                _i > -1 && (obj.chatList[_i].readed = true);
+              }
+            }
+          } // 处理上下限消息
+
+        }, {
+          key: "doType3",
+          value: function doType3(isISend, d, isServer, obj) {
+            isISend && this.showAlert('游客' + d.fid + (d.data === 'online' ? '上' : '离') + '线'); // 客服端 处理一下用户列表用户上下线显示
+
+            if (isServer) {
+              var i = obj.userList.findIndex(function (x) {
+                return x.id === d.fid;
+              });
+              i > -1 && (obj.userList[i].state = d.data === 'online');
+              console.log('type=3', i, d, obj.userList[i].state);
+            }
+          } // 处理普通消息
+
+        }, {
+          key: "doType0",
+          value: function doType0(isISend, obj, d, isServer) {
+            var _this12 = this;
+
+            var fid = d.fid;
+            this.attachSPT(obj, d, isServer);
+
+            if (!isISend) {
+              // 不是我发送的消息-判断是客服端还是服务端
+              var chatScrollTop = obj.chatElem.scrollTop;
+
+              if (isServer) {
+                // 客服端-判断发送方是正在谈话的一方吗
+                var isCuUserSend = fid === (obj.user && obj.user.id);
+                d.state = true;
+
+                if (isCuUserSend) {
+                  obj.chatList.push(d);
+                  var name = obj.user && obj.user.name ? '用户' + obj.user.name : '游客' + fid;
+                  !this.isWindowActive && this.deskNotify('消息提示', name + '发来一条新消息');
+
+                  if (this.isWindowActive) {
+                    // 当前用户激活窗口
+                    if (chatScrollTop === 0) {
+                      // 直接发送已读消息
+                      this.sendMsg({
+                        id: d.id,
+                        rid: obj.user.id,
+                        type: 1
+                      });
+                    } else {
+                      // 有滚动条-直接设置未读已读
+                      obj.user.unreadOption = obj.user.unreadOption || {};
+                      obj.user.unreadOption.unread++;
+                      obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                    }
+                  } else {
+                    // 未激活-直接设置未读已读
+                    obj.user.unreadOption = obj.user.unreadOption || {};
+                    obj.user.unreadOption.unread++;
+                    obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                  }
+                } else {
+                  // 不是当前用户发来的消息-判断该用户是否已经在用户列表了
+                  var userIndex = obj.userList.findIndex(function (u) {
+                    return u.id === fid;
+                  });
+                  var isInUserList = userIndex > -1;
+
+                  if (isInUserList) {
+                    var _name = obj.userList[userIndex] && obj.userList[userIndex].name ? '用户' + obj.userList[userIndex].name : '游客' + fid;
+
+                    this.deskNotify('消息提示', _name + '发来一条新消息');
+                    obj.userList[userIndex].unreadOption = obj.userList[userIndex].unreadOption || {};
+                    obj.user.unreadOption.unread++;
+                    obj.user.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                  } else {
+                    // 不在用户列表-获取用户信息-推送用户到列表
+                    this.getUserInfo(fid, function (userInfo) {
+                      obj.userList.unshift(userInfo);
+                      var name = userInfo.name ? '用户' + userInfo.name : '游客' + fid;
+                      d.state = true;
+                      !_this12.isWindowActive && _this12.deskNotify('消息提示', name + '发来一条新消息');
+                      userInfo.unreadOption = userInfo.unreadOption || {};
+                      userInfo.unreadOption.unread++;
+                      userInfo.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                    });
+                  }
+                }
+              } else {
+                // 客户端-显示在左侧
+                obj.chatList.push(d);
+                !this.isWindowActive && this.deskNotify('消息提示', '有一条新消息回复'); // 给加未读和设置已读消息
+
+                if (this.isWindowActive) {
+                  // 窗口激活
+                  if (chatScrollTop === 0) {
+                    // 窗口没有滚动条-直接阅读了消息-发送已阅读消息
+                    this.sendMsg({
+                      id: d.id,
+                      type: 1
+                    });
+                    d.readed = true;
+                  } else {
+                    // 有滚动条- 设置未读消息数
+                    obj.unreadOption.unread++;
+                    obj.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                  }
+                } else {
+                  // 窗口未激活-增加未读
+                  obj.unreadOption.unread++;
+                  obj.unreadOption.scrollHeight = obj.chatElem.scrollHeight;
+                }
+              }
+            } else {
+              // 是我发送的，先看在不在列表中，不在的话就推到列表中      
+              var i = obj.chatList.findIndex(function (x) {
+                return x.mark === d.mark;
+              });
+              i === -1 && obj.chatList.push(d);
+            }
+          } // 处理历史消息
+
+        }, {
+          key: "doHistory",
+          value: function doHistory(data, isServer) {
+            // 设置未读数-和对方一堆信息标志
+            // 客户端 判断最后一条消息是不是客户消息，是的话默认全部客服unreadOption.unread=0,否则看最后一条消息是不是两个读者，是的话就是chatList[len-1]:unread
+            var lastMsg = data[data.length - 1];
+            console.log('lastMsg: ', lastMsg);
+            data.foreach(function (el) {
+              if (isServer) {} else {// 客户端
+              }
+            });
           } // 获取用户列表
 
         }, {
           key: "getUserList",
           value: function getUserList(success) {
-            var _this12 = this;
+            var _this13 = this;
 
             this.http.get(this.api.userList).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('getUserList'))).subscribe(function (res) {
-              _this12.doHttpResponse(res, success);
+              _this13.doHttpResponse(res, success);
             });
           }
         }, {
           key: "getUserInfo",
           value: function getUserInfo(id, cb) {
-            var _this13 = this;
+            var _this14 = this;
 
             this.http.get(this.api.userInfo + id).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('getUserInfo'))).subscribe(function (res) {
-              _this13.doHttpResponse(res, cb);
+              _this14.doHttpResponse(res, cb);
             });
           }
         }, {
           key: "login",
           value: function login(data) {
-            var _this14 = this;
+            var _this15 = this;
 
             this.http.post(this.api.login, data).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('login'))).subscribe(function (res) {
-              _this14.doHttpResponse(res, function () {
-                _this14.showAlert('登录成功');
+              _this15.doHttpResponse(res, function () {
+                _this15.showAlert('登录成功');
 
-                _this14.isLogin = true; // 登录成功跳转客服页面
+                _this15.isLogin = true; // 登录成功跳转客服页面
 
                 setTimeout(function () {
-                  _this14.router.navigate(['/server']);
+                  _this15.router.navigate(['/server']);
                 }, 2000);
               });
             });
@@ -1306,26 +1447,11 @@
         }, {
           key: "register",
           value: function register(data) {
-            var _this15 = this;
-
-            this.http.post(this.api.register, data).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('register'))).subscribe(function (res) {
-              _this15.doHttpResponse(res, function () {
-                _this15.showAlert('注册成功，马上跳转登录');
-
-                setTimeout(function () {
-                  _this15.router.navigate(['/auth/login']);
-                }, 2000);
-              });
-            });
-          }
-        }, {
-          key: "logout",
-          value: function logout() {
             var _this16 = this;
 
-            this.http.post(this.api.logout, null).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('logout'))).subscribe(function (res) {
+            this.http.post(this.api.register, data).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('register'))).subscribe(function (res) {
               _this16.doHttpResponse(res, function () {
-                _this16.showAlert('登出成功!');
+                _this16.showAlert('注册成功，马上跳转登录');
 
                 setTimeout(function () {
                   _this16.router.navigate(['/auth/login']);
@@ -1334,9 +1460,24 @@
             });
           }
         }, {
+          key: "logout",
+          value: function logout() {
+            var _this17 = this;
+
+            this.http.post(this.api.logout, null).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(this.handleError('logout'))).subscribe(function (res) {
+              _this17.doHttpResponse(res, function () {
+                _this17.showAlert('登出成功!');
+
+                setTimeout(function () {
+                  _this17.router.navigate(['/auth/login']);
+                }, 2000);
+              });
+            });
+          }
+        }, {
           key: "getHistory",
           value: function getHistory(obj, id, success) {
-            var _this17 = this;
+            var _this18 = this;
 
             var options = {
               observe: obj.myID ? 'body' : 'response'
@@ -1350,10 +1491,10 @@
 
               var ret = isResponseObserv ? res.body : res;
 
-              _this17.doHttpResponse(ret, function (data) {
+              _this18.doHttpResponse(ret, function (data) {
                 data && data.reverse();
                 data && data.forEach(function (d) {
-                  _this17.attachSPT(obj, d, isServer);
+                  _this18.attachSPT(obj, d, isServer);
                 });
                 success(data);
               });
@@ -2742,7 +2883,7 @@
         _createClass(ServerComponent, [{
           key: "ngOnInit",
           value: function ngOnInit() {
-            var _this18 = this;
+            var _this19 = this;
 
             this.historyDate = this.com.formatTime('', 'YYYY-MM-DD');
             this.initCalendar();
@@ -2755,10 +2896,10 @@
                   // 5s不回应默认已掉线
                   d.state = Date.now() - d.note_at / 1000000 < 5000;
                 });
-                _this18.userList = data;
-                _this18.user = data[0];
+                _this19.userList = data;
+                _this19.user = data[0];
 
-                _this18.getHistory();
+                _this19.getHistory();
               }
             }); // 开启轮询
 
@@ -2776,10 +2917,10 @@
         }, {
           key: "initCalendar",
           value: function initCalendar() {
-            var _this19 = this;
+            var _this20 = this;
 
             var callback = function callback(y, m, d) {
-              _this19.historyDate = _this19.com.formatTime(y + '-' + m + '-' + d, 'YYYY-MM-DD');
+              _this20.historyDate = _this20.com.formatTime(y + '-' + m + '-' + d, 'YYYY-MM-DD');
             };
 
             new _assets_js_calendar__WEBPACK_IMPORTED_MODULE_1__({
@@ -2822,17 +2963,17 @@
         }, {
           key: "getHistory",
           value: function getHistory() {
-            var _this20 = this;
+            var _this21 = this;
 
             this.com.getHistory(this, this.user.id, function (data) {
-              _this20.chatList = data || [];
+              _this21.chatList = data || [];
               setTimeout(function () {
-                _this20.toBottom();
+                _this21.toBottom();
               }, 1000);
 
-              if (_this20.rightShow) {
-                _this20.rightHistory = data;
-                _this20.allHistory = data;
+              if (_this21.rightShow) {
+                _this21.rightHistory = data;
+                _this21.allHistory = data;
               }
             });
           }
@@ -2869,14 +3010,14 @@
         }, {
           key: "rightHitoryShow",
           value: function rightHitoryShow(toggle) {
-            var _this21 = this;
+            var _this22 = this;
 
             if (!toggle) {
               this.com.getHistory(this, this.user.id, function (data) {
                 // 显示右侧信息
-                _this21.rightShow = 'right-show';
-                _this21.rightHistory = data;
-                _this21.allHistory = data;
+                _this22.rightShow = 'right-show';
+                _this22.rightHistory = data;
+                _this22.allHistory = data;
               });
             } else {
               this.closeHistory();
@@ -3793,7 +3934,7 @@
         }, {
           key: "getFile",
           value: function getFile(e) {
-            var _this22 = this;
+            var _this23 = this;
 
             //  允许的文件类型
             // .doc application/msword
@@ -3820,7 +3961,7 @@
                   file: file
                 };
 
-                _this22.who.files.push(obj);
+                _this23.who.files.push(obj);
               });
               this.fileEmiter.emit(true);
             } else if (permitType.indexOf(file.type) > -1) {
@@ -4128,7 +4269,7 @@
         }, {
           key: "editPaste",
           value: function editPaste(e) {
-            var _this23 = this;
+            var _this24 = this;
 
             var cbd = e.clipboardData;
             console.log('editPaste: ', cbd);
@@ -4165,14 +4306,14 @@
                 e.preventDefault();
                 this.com.preview(blob, function (src) {
                   // 如果前面是一个img标签且是data开头
-                  _this23.who.files.push({
+                  _this24.who.files.push({
                     type: 'img',
                     src: src,
                     file: blob,
                     fid: 'img' + Date.now()
                   });
 
-                  _this23.keepLastIndex(_this23.target);
+                  _this24.keepLastIndex(_this24.target);
                 });
               }
             }
@@ -4238,7 +4379,7 @@
         }, {
           key: "send",
           value: function send() {
-            var _this24 = this;
+            var _this25 = this;
 
             this.editText = this.target.innerHTML; // 去掉注释节点-换行<br>成空
 
@@ -4263,20 +4404,20 @@
               this.who.toBottom();
               var count = 0;
               this.who.files.forEach(function (file, i) {
-                _this24.editText.indexOf(file.fid) === -1 && _this24.who.files.splice(i, 1);
+                _this25.editText.indexOf(file.fid) === -1 && _this25.who.files.splice(i, 1);
               });
 
               if (this.who.files.length) {
                 // 判断files 有没有删除掉
                 this.who.files.forEach(function (el) {
-                  _this24.com.uploadFile(el, function (file, err) {
+                  _this25.com.uploadFile(el, function (file, err) {
                     if (err) {
                       // 发送失败
-                      var i = _this24.who.chatList.findIndex(function (x) {
+                      var i = _this25.who.chatList.findIndex(function (x) {
                         return x.mark === content.mark;
                       });
 
-                      i > -1 && (_this24.who.chatList[i].isUploaded = -1);
+                      i > -1 && (_this25.who.chatList[i].isUploaded = -1);
                     } else {
                       count++;
                       var span = null;
@@ -4296,10 +4437,10 @@
                         }
                       } catch (e) {}
 
-                      if (count === _this24.who.files.length) {
+                      if (count === _this25.who.files.length) {
                         content.data = div.innerHTML;
 
-                        _this24.sendMsg(content);
+                        _this25.sendMsg(content);
                       }
                     }
                   }, function (file) {// chatList 显示进度条
@@ -4321,18 +4462,18 @@
         }, {
           key: "sendMsg",
           value: function sendMsg(content) {
-            var _this25 = this;
+            var _this26 = this;
 
             this.com.sendMsg(content, function (data) {
-              _this25.who.files = [];
+              _this26.who.files = [];
 
-              var i = _this25.who.chatList.findIndex(function (x) {
+              var i = _this26.who.chatList.findIndex(function (x) {
                 return x.mark === content.mark;
               });
 
-              i > -1 && (_this25.who.chatList[i].isUploaded = 1);
+              i > -1 && (_this26.who.chatList[i].isUploaded = 1);
               setTimeout(function () {
-                _this25.who.toBottom();
+                _this26.who.toBottom();
               }, 1000);
             }, function (res) {
               // 失败-客户端就显示失败的消息到聊天框
@@ -4344,17 +4485,17 @@
                 offline.isServer = true;
                 offline.position = true;
 
-                _this25.who.chatList.push(offline);
+                _this26.who.chatList.push(offline);
 
                 setTimeout(function () {
-                  _this25.who.toBottom();
+                  _this26.who.toBottom();
                 }, 1000);
               } else {
-                var i = _this25.who.chatList.findIndex(function (x) {
+                var i = _this26.who.chatList.findIndex(function (x) {
                   return x.mark === content.mark;
                 });
 
-                i > -1 && (_this25.who.chatList[i].isUploaded = -1);
+                i > -1 && (_this26.who.chatList[i].isUploaded = -1);
               }
             });
           }
