@@ -112,6 +112,7 @@ func (u *User) HandleMessage(m *Message) error {
 
 //StoreMessage 储存消息
 func StoreMessage(m *Message) {
+	m.ID = generatorNextMessageID()
 	chatStoreChan <- m
 }
 
