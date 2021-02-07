@@ -235,6 +235,12 @@ func init() {
 	}()
 }
 
+func ServerNumbers() int {
+	ServerIDSLocker.RLock()
+	defer ServerIDSLocker.RUnlock()
+	return len(ServerIDS)
+}
+
 func AddServerID(id int32) {
 	ServerIDSLocker.Lock()
 	defer ServerIDSLocker.Unlock()

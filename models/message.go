@@ -110,6 +110,11 @@ func (u *User) HandleMessage(m *Message) error {
 	return nil
 }
 
+//StoreMessage 储存消息
+func StoreMessage(m *Message) {
+	chatStoreChan <- m
+}
+
 //Connection 消息连接
 type Connection interface {
 	Push(m *Message)

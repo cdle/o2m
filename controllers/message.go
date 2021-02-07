@@ -68,10 +68,7 @@ func (c *MessageController) ReceiveMessage() {
 	c.getAuth()
 	ap := &models.AjaxPolling{}
 	u := c.User()
-	///客户上线推送
-	// fmt.Println("/////", u.GetRole(), u.Online(), "init")
 	if u.GetRole() >= 3 && !u.Online() {
-		// fmt.Println("-----")
 		if sid := u.GetServerID(); sid != 0 {
 			s, _ := models.FetchUser(sid)
 			s.Push(&models.Message{
@@ -81,7 +78,6 @@ func (c *MessageController) ReceiveMessage() {
 			})
 		}
 	}
-	///
 	ap = ap.Init(u, c.GetString("random"))
 	c.Ctx.Output.Header("Request-Times", fmt.Sprint(ap.GetTimes()))
 	if ap.GetTimes() == 1 && u.GetRole() >= 3 {
@@ -137,5 +133,15 @@ func (c *MessageController) getAuth() {
 	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
 	c.UID = u.ID
 	c.UTP = u.Role
-	// c.Response()
+	if snum := models.ServerNumbers(); snum != 0 {
+		models.StoreMessage(&models.Message{
+			Rid:  u.ID,
+			Data: "当前有" + fmt.Sprint(snum) + "客服在线，快来撩吧。",
+		})
+	} else {
+		models.StoreMessage(&models.Message{
+			Rid:  u.ID,
+			Data: "抱歉，客服正骑着共享单车赶往公司呢。",
+		})
+	}
 }
