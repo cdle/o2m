@@ -2,7 +2,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -31,9 +30,13 @@ func storeChat() {
 	go func() {
 		for m := range chatStoreChan {
 			if m.Type == 1 {
-				readMessage(m.Fid, m.ID)
+				if err := readMessage(m.Fid, m.ID); err != nil {
+					chatStoreChan <- m
+				}
 			} else {
-				db.Create(m)
+				if err := db.Create(m).Error; err != nil {
+					chatStoreChan <- m
+				}
 			}
 		}
 	}()
@@ -116,19 +119,16 @@ type Connection interface {
 
 //readMessage 阅读消息
 func readMessage(uid int32, mid int64) error {
-	tx := db.Begin()
 	m := Message{}
-	err := tx.Find(&m, mid).Error
+	err := db.Find(&m, mid).Error
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	uidS := fmt.Sprint(uid)
 	readers := strings.Split(m.Readers, ",")
 	for _, reader := range readers {
 		if uidS == reader {
-			tx.Rollback()
-			return errors.New("已经阅读过消息")
+			return nil
 		}
 	}
 	if m.Readers != "" {
@@ -136,12 +136,7 @@ func readMessage(uid int32, mid int64) error {
 	} else {
 		m.Readers = uidS
 	}
-	err = tx.Model(&m).Update("readers", m.Readers).Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	err = tx.Commit().Error
+	err = db.Model(&m).Update("readers", m.Readers).Error
 	if err != nil {
 		return err
 	}

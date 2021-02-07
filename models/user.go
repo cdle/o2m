@@ -53,6 +53,9 @@ func CreateUser(u *User, a *Auth) error {
 	}
 	u.NoteAt = time.Now().UnixNano()
 	tx := db.Begin()
+	if err := tx.Error; err != nil {
+		return err
+	}
 	err := tx.Create(u).Error
 	if err != nil {
 		tx.Rollback()

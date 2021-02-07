@@ -16,7 +16,7 @@ type MessageController struct {
 type SendMessageRequest struct {
 	ID   int64  `json:"id" `
 	Rid  int32  `json:"rid"`
-	Data string `json:"data" validate:"required,lt=50000"`
+	Data string `json:"data" validate:"required,lt=10000"`
 	Mark string `json:"mark" validate:"omitempty,lt=32"`
 	Type int32  `json:"type" validate:"omitempty,oneof=0 1 2 3 4 5 6"`
 }
@@ -135,5 +135,7 @@ func (c *MessageController) getAuth() {
 	c.SetSession("uid", u.ID)
 	c.SetSession("utp", u.Role)
 	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
+	c.UID = u.ID
+	c.UTP = u.Role
 	// c.Response()
 }
