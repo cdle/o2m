@@ -48,7 +48,8 @@ func (c *MessageController) GetClientHistoryMessage() {
 	c.Logined()
 	c.Ctx.Output.Header("uid", fmt.Sprint(c.UID))
 	if c.UTP >= 3 {
-		c.Response(models.GetClientHistoryMessage(c.UID))
+		c.Response()
+		// c.Response(models.GetClientHistoryMessage(c.UID))
 	} else {
 		c.Response(models.GetClientHistoryMessage(c.GetQueryInt32("id")))
 	}
@@ -136,7 +137,7 @@ func (c *MessageController) getAuth() {
 	if snum := models.ServerNumbers(); snum != 0 {
 		models.StoreMessage(&models.Message{
 			Rid:  u.ID,
-			Data: "当前有" + fmt.Sprint(snum) + "客服在线，快来撩吧。",
+			Data: "当前" + fmt.Sprint(snum) + "客服在线，快来撩吧。",
 		})
 	} else {
 		models.StoreMessage(&models.Message{
