@@ -93,15 +93,20 @@ func (u *User) HandleMessage(m *Message) error {
 		u.Push(r)
 		chatStoreChan <- r
 	} else {
-		r, err := FetchUser(m.Rid)
-		if err != nil {
-			return err
+		var r *User
+		var err error
+		if m.Rid != 0 {
+			if r, err = FetchUser(m.Rid); err != nil {
+				return err
+			}
 		}
 		if m.Type == 0 {
 			m.ID = generatorNextMessageID()
 			m.Readers = fmt.Sprint(m.Fid)
 		}
-		r.Push(m)
+		if m.Rid != 0 {
+			r.Push(m)
+		}
 		u.Push(m)
 		if m.Type < 2 {
 			chatStoreChan <- m
