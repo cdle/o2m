@@ -2307,7 +2307,7 @@ function ChatContentComponent_div_0_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", !c_r1.position && c_r1.isUploaded === 0 - 1);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", !c_r1.position);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", !c_r1.position && c_r1.isUploaded !== 0 - 1);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", c_r1.position);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
@@ -2600,7 +2600,6 @@ var SendAreaComponent = /** @class */ (function () {
         this.setEditDivUsable();
     };
     SendAreaComponent.prototype.ngOnChanges = function (changes) {
-        console.log('send-area changes: ', changes);
         // 有新文件加入
         this.newFileNode(this.who.files[this.who.files.length - 1]);
     };
@@ -2682,12 +2681,14 @@ var SendAreaComponent = /** @class */ (function () {
                 e.preventDefault();
                 this.com.preview(blob, function (src) {
                     // 如果前面是一个img标签且是data开头
-                    _this.who.files.push({
+                    var file = {
                         type: 'img',
                         src: src,
                         file: blob,
                         fid: 'img' + Date.now(),
-                    });
+                    };
+                    _this.who.files.push(file);
+                    _this.newFileNode(file);
                     _this.keepLastIndex(_this.target);
                 });
             }
@@ -2739,14 +2740,12 @@ var SendAreaComponent = /** @class */ (function () {
     SendAreaComponent.prototype.send = function () {
         var _this = this;
         var html = this.target.innerHTML;
-        console.log('html: ', html);
         // 去掉注释节点-换行<br>成空
         var div = document.createElement('div');
         div.innerHTML = html;
         var nodes = Array.from(div.childNodes);
         for (var i = nodes.length; i--;) {
             var n = nodes[i];
-            console.log('n: ', n);
             if (n.nodeType === 8) {
                 this.target.innerHTML = '';
                 this.target.appendChild(n);
@@ -2765,8 +2764,9 @@ var SendAreaComponent = /** @class */ (function () {
             this.com.jumpToChatBottom(this.who);
             var count_1 = 0;
             this.who.files.forEach(function (file, i) {
-                _this.editText.indexOf(file.fid) === -1 && _this.who.files.splice(i, 1);
+                editTxt.indexOf(file.fid) === -1 && _this.who.files.splice(i, 1);
             });
+            console.log('this.who.files.length', this.who.files.length);
             if (this.who.files.length) {
                 // 判断files 有没有删除掉
                 this.who.files.forEach(function (el) {
@@ -2814,14 +2814,11 @@ var SendAreaComponent = /** @class */ (function () {
         else {
             this.com.showAlert('请填写消息');
         }
-        // this.fileCommentNode  = this.target.lastChild;
-        // if (this.fileCommentNode) {
         this.target.innerHTML = '';
-        //   this.target.appendChild(this.fileCommentNode);
-        // }
     };
     SendAreaComponent.prototype.sendMsg = function (content) {
         var _this = this;
+        console.log('sendMsg: ', content);
         this.com.sendMsg(content, function (data) {
             console.info('发送成功');
             _this.who.files = [];
