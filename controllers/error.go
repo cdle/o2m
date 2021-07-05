@@ -13,7 +13,7 @@ var index []byte
 func init() {
 	f, err := os.Open(beego.AppConfig.String("www") + `\index.html`)
 	if err != nil {
-		return
+		panic(err)
 	}
 	index, _ = ioutil.ReadAll(f)
 }
