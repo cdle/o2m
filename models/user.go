@@ -19,7 +19,7 @@ type User struct {
 	//姓名
 	Name string `json:"name"`
 	//邮箱
-	Email string `json:"email" gorm:"type:varchar(100);default:null;unique_index"`
+	Email string `json:"email" gorm:"type:varchar(100);unique_index"`
 	//性别 1 男 2 女
 	Sex int32 `json:"sex"`
 	//记录活跃时间
