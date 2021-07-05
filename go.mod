@@ -6,6 +6,7 @@ replace github.com/astaxie/beego v1.12.1 => github.com/cdle/beego v1.12.6 // ind
 
 require (
 	github.com/astaxie/beego v1.12.3
+	github.com/cdle/steady v1.0.20
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/gofrs/uuid v4.0.0+incompatible

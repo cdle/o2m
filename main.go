@@ -5,6 +5,7 @@ import (
 
 	"github.com/cdle/o2m/controllers"
 	_ "github.com/cdle/o2m/routers"
+	_ "github.com/cdle/steady"
 )
 
 //main 入口程序
