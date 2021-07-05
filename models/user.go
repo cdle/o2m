@@ -91,8 +91,6 @@ func UpdateUser(n *User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	u.Lock()
-	defer u.Unlock()
 	tx := db.Begin()
 	if tx.Model(n).Where("id = ?", n.ID).Updates(*n).RowsAffected != 0 {
 		if n.Email != "" {
@@ -107,15 +105,14 @@ func UpdateUser(n *User) (*User, error) {
 		}
 		///
 		if n.Role != 0 {
-			u.Role = n.Role
+			u.SetRole(n.Role)
 		}
 		if n.Name != "" {
-			u.Name = n.Name
+			u.SetName(n.Name)
 		}
 		if n.Email != "" {
-			u.Email = n.Email
+			u.SetEmail(n.Email)
 		}
-		///
 		return u, err
 	}
 	tx.Rollback()
@@ -147,11 +144,7 @@ func FetchUser(id int32) (*User, error) {
 func FetchUsers() []*User {
 	us := []*User{}
 	users.Range(func(_, v interface{}) bool {
-		u := v.(*User)
-		u.RLock()
-		n := *u
-		u.RUnlock()
-		us = append(us, &n)
+		us = append(us, v.(*User))
 		return true
 	})
 	return us
@@ -172,15 +165,22 @@ func GetClients(sid int32) []User {
 //GetID get ID
 func (u *User) GetID() int32 {
 	u.RLock()
-	u.RUnlock()
+	defer u.RUnlock()
 	return u.ID
 }
 
 //GetRole get role
 func (u *User) GetRole() int32 {
 	u.RLock()
-	u.RUnlock()
+	defer u.RUnlock()
 	return u.Role
+}
+
+//SetRole set role
+func (u *User) SetRole(role int32) {
+	u.Lock()
+	defer u.Unlock()
+	u.Role = role
 }
 
 //Init init
@@ -190,28 +190,50 @@ func (u *User) Init() {
 }
 
 //SetID set id
-func (u *User) SetID(id int32) *User {
-	up, ok := users.Load(id)
-	if ok {
-		u = up.(*User)
-		return u
-	}
-	return nil
+func (u *User) SetID(id int32) {
+	u.Lock()
+	defer u.Unlock()
+	u.ID = id
+}
+
+//SetServerID set id
+func (u *User) SetServerID(id int32) {
+	u.Lock()
+	defer u.Unlock()
+	u.ServerID = id
 }
 
 //GetName get name
 func (u *User) GetName() string {
 	u.RLock()
-	u.RUnlock()
+	defer u.RUnlock()
 	return u.Name
+}
+
+//SetName set name
+func (u *User) SetName(name string) {
+	u.Lock()
+	defer u.Unlock()
+	u.Name = name
+}
+
+//SetEmail set email
+func (u *User) SetEmail(email string) {
+	u.Lock()
+	defer u.Unlock()
+	u.Email = email
 }
 
 //Push 推送消息
 func (u *User) Push(m *Message) {
 	u.RLock()
+	//("u.RLock()")
 	defer u.RUnlock()
+	//("defer u.RUnlock()")
 	for _, connect := range u.Connections {
-		connect.Push(m)
+		//("for _, connect := range u.Connections {")
+		go connect.Push(m)
+		//("connect.Push(m)")
 	}
 }
 
@@ -224,8 +246,7 @@ func init() {
 			<-time.After(time.Second * 2)
 			ServerIDSLocker.RLock()
 			for _, ServerID := range ServerIDS {
-				u, err := FetchUser(ServerID)
-				if err != nil || !u.Online() {
+				if u, err := FetchUser(ServerID); err != nil || !u.Online() {
 					go RemServerID(ServerID)
 					break
 				}
@@ -284,17 +305,22 @@ func GetServerID(id int32, sid int32) int32 {
 
 // GetRandomServerID 获取随机客服ID
 func (u *User) GetRandomServerID(id int32) int32 {
-	if u.Role <= 2 {
+	//("func (u *User) GetRandomServerID(id int32) int32 {")
+	if u.GetRole() <= 2 {
+		//("if u.GetRole() <= 2 {")
 		return id
 	}
-	u.RLock()
-	sid := GetServerID(u.GetID(), u.ServerID)
-	u.RUnlock()
-	if sid != u.ServerID {
-		u.Lock()
-		u.ServerID = sid
-		u.Unlock()
+	//("if u.GetRole() > 2 {")
+	osid := u.GetServerID()
+	//("osid := u.GetServerID()")
+	sid := GetServerID(u.GetID(), osid)
+	//("sid := GetServerID(u.GetID(), osid)")
+	if sid != osid {
+		//("if sid != osid {")
+		u.SetServerID(sid)
+		//("u.SetServerID(sid)")
 	}
+	//("if sid == osid {")
 	return sid
 }
 
@@ -333,7 +359,7 @@ func (u *User) GetNoteTime() int64 {
 	return u.NoteAt
 }
 
-//GetLiveTime 获取活跃时间
+//Online 是否在线
 func (u *User) Online() bool {
 	u.RLock()
 	defer u.RUnlock()
@@ -341,4 +367,35 @@ func (u *User) Online() bool {
 		return false
 	}
 	return (time.Now().UnixNano()-u.NoteAt)/1e9 < 1
+}
+
+// GetConnection 获取连接
+func (u *User) GetConnection(random string) Connection {
+	u.RLock()
+	defer u.RUnlock()
+	for _, connection := range u.Connections {
+		if connection.GetRandom() == random {
+			return connection
+		}
+	}
+	return nil
+}
+
+//AddConnection 添加链接
+func (u *User) AddConnection(connection Connection) {
+	u.Lock()
+	defer u.Unlock()
+	u.Connections = append(u.Connections, connection)
+}
+
+//RemoveAjax 移除连接
+func (u *User) RemoveConnection(torm Connection) {
+	u.Lock()
+	defer u.Unlock()
+	for k, conn := range u.Connections {
+		if torm.GetRandom() == conn.GetRandom() {
+			u.Connections = append((u.Connections)[:k], (u.Connections)[k+1:]...)
+			return
+		}
+	}
 }

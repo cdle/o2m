@@ -12,8 +12,6 @@ type AjaxPolling struct {
 	User *User
 	//随机字符
 	Random string
-	// //唯一ID
-	// UUID string
 	//上次活跃
 	ActiveAt time.Time
 	//接收消息管道
@@ -30,36 +28,37 @@ const WaittingTime = 5
 
 //Init 连接初始化
 func (a *AjaxPolling) Init(u *User, random string) *AjaxPolling {
-	u.Lock()
-	defer u.Unlock()
-	for _, connection := range u.Connections {
-		if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == random {
-			// fmt.Println("old")
-			ajax.Times++
+	if connection := u.GetConnection(random); connection != nil {
+		if ajax, ok := connection.(*AjaxPolling); ok {
+			ajax.AddTimes()
 			return ajax
 		}
 	}
-	// fmt.Println("new")
-	u.Connections = append(u.Connections, a)
+	u.AddConnection(a)
 	a.MessagesChan = make(chan *Message, 0)
 	a.RWMutex = new(sync.RWMutex)
 	a.User = u
 	a.Random = random
-	// a.UUID = GeneratorUUID()
 	a.Times++
-	defer a.Destroy()
+	a.Destroy()
 	return a
 }
 
 //Push 推送消息
 func (a *AjaxPolling) Push(m *Message) {
+	//("begin -----------")
 	a.Lock()
+	//("a.Lock()")
 	defer a.Unlock()
+	//("defer a.Unlock()")
 	select {
 	case a.MessagesChan <- m:
+		//("case a.MessagesChan <- m:")
 	default:
 		a.IdleMessage = append(a.IdleMessage, m)
+		//("a.IdleMessage = append(a.IdleMessage, m)")
 	}
+	//("finish +++++++++++++")
 }
 
 //GetActive 获取激活时间
@@ -69,19 +68,12 @@ func (a *AjaxPolling) GetActive() time.Time {
 	return a.ActiveAt
 }
 
-// //GetActive 获取激活时间
-// func (a *AjaxPolling) GetUUID() string {
-// 	a.RLock()
-// 	defer a.RUnlock()
-// 	return a.UUID
-// }
-
 //Note 激活
 func (a *AjaxPolling) Note() {
-	a.GetUser().Note()
 	a.Lock()
+	defer a.Unlock()
+	go a.User.Note()
 	a.ActiveAt = time.Now()
-	a.Unlock()
 }
 
 //GetUser 获取所属用户
@@ -134,35 +126,24 @@ func (a *AjaxPolling) GetIdleMessage() []*Message {
 //Destroy 销毁虚拟连接
 func (a *AjaxPolling) Destroy() {
 	go func() {
-		for { //可以优化至用户
-			// fmt.Println("======")
+		for {
 			<-time.After(time.Second)
 			u := a.GetUser()
 			if time.Now().After(a.GetActive().Add(5*time.Second + time.Millisecond*100)) {
-				u.Lock()
-				for k, connection := range u.Connections {
-					if ajax, ok := connection.(*AjaxPolling); ok && ajax.GetRandom() == a.GetRandom() {
-						u.Connections = append((u.Connections)[:k], (u.Connections)[k+1:]...)
-						u.Unlock()
-						///客户离线推送
-						// fmt.Println("/////", u.GetRole(), u.Online(), "destroy")
-						if u.GetRole() >= 3 && !u.Online() {
-							if sid := u.GetServerID(); sid != 0 {
-								s, _ := FetchUser(sid)
-								// fmt.Println(s)
-								s.Push(&Message{
-									Fid:  u.GetID(),
-									Type: 3,
-									Data: "offline",
-								})
-							}
+				u.RemoveConnection(a)
+				if u.GetRole() >= 3 && !u.Online() {
+					if sid := u.GetServerID(); sid != 0 {
+						if s, err := FetchUser(sid); err != nil {
+							s.Push(&Message{
+								Fid:  u.GetID(),
+								Type: 3,
+								Data: "offline",
+							})
 						}
-						///
-						db.Table("users").Where("id = ?", u.ID).Update("note_at", u.GetNoteAt())
-						return
 					}
 				}
-				u.Unlock()
+				go db.Table("users").Where("id = ?", u.ID).Update("note_at", u.GetNoteAt())
+				return
 			}
 		}
 	}()

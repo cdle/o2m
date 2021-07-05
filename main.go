@@ -5,7 +5,6 @@ import (
 
 	"github.com/cdle/o2m/controllers"
 	_ "github.com/cdle/o2m/routers"
-	"github.com/cdle/steady"
 )
 
 //main 入口程序
@@ -17,7 +16,7 @@ func main() {
 	beego.BConfig.WebConfig.Session.SessionProvider = "file"
 	beego.BConfig.WebConfig.Session.SessionProviderConfig = "./session"
 	beego.BConfig.WebConfig.Session.SessionGCMaxLifetime = 360000
-	beego.SetStaticPath("/", steady.ExecPath+"/www")
+	beego.SetStaticPath("/", beego.AppConfig.String("www"))
 	beego.ErrorController(&controllers.ErrorController{})
 	beego.Run()
 }

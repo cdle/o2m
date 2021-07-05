@@ -206,4 +206,5 @@ func (c *BaseController) Allow(tps ...int32) *BaseController {
 	}
 	c.ResponseError("无权限", NoAccessError)
 	return nil
+
 }

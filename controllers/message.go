@@ -7,7 +7,7 @@ import (
 	"github.com/cdle/o2m/models"
 )
 
-//MessageController 鉴权控制器
+//MessageController 消息控制器
 type MessageController struct {
 	BaseController
 }
@@ -67,7 +67,7 @@ func (c *MessageController) GetClientHistoryMessage() {
 // @router /polling [get]
 func (c *MessageController) ReceiveMessage() {
 	c.getAuth()
-	ap := &models.AjaxPolling{}
+	conn := &models.AjaxPolling{}
 	u := c.User()
 	if u.GetRole() >= 3 && !u.Online() {
 		if sid := u.GetServerID(); sid != 0 {
@@ -79,24 +79,36 @@ func (c *MessageController) ReceiveMessage() {
 			})
 		}
 	}
-	ap = ap.Init(u, c.GetString("random"))
-	c.Ctx.Output.Header("Request-Times", fmt.Sprint(ap.GetTimes()))
-	if ap.GetTimes() == 1 && u.GetRole() >= 3 {
-		c.Response(models.GetClientHistoryMessage(c.UID))
+	conn = conn.Init(u, c.GetString("random"))
+	c.Ctx.Output.Header("Request-Times", fmt.Sprint(conn.GetTimes()))
+	if conn.GetTimes() == 1 && u.GetRole() >= 3 {
+		his := models.GetClientHistoryMessage(c.UID)
+		if len(*his) == 0 {
+			hello := models.Message{
+				Time: time.Now().UnixNano(),
+				Rid:  u.GetID(),
+				Data: `<span>Hello! How can I help you?&nbsp;</span><span data-size="small" data-name="small-smile" style="white-space: normal;/* background-color: rgb(25, 114, 245); */color: rgb(255, 255, 255);font-family: &quot;Crisp Noto Sans Regular&quot;, sans-serif;max-width: none !important;word-break: normal !important;font-size: 11px !important;box-sizing: content-box !important;background-attachment: scroll !important;background-image: url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIzMiIgZmlsbD0iI0ZGREQ2NyIvPjxnIGZpbGw9IiM2NjRFMjciIHRyYW5zZm9ybT0idHJhbnNsYXRlKDEzLjkgMjAuMykiPjxjaXJjbGUgY3g9IjUuOSIgY3k9IjYiIHI9IjUuMyIvPjxjaXJjbGUgY3g9IjMwLjQiIGN5PSI2IiByPSI1LjMiLz48cGF0aCBkPSJNMzEuNiAyMC42Yy04LjcgNi0xOC4zIDYtMjcgMC0xLS44LTEuOC41LTEuMiAxLjdhMTcuNSAxNy41IDAgMDAxNC43IDguMmM2LjkgMCAxMi0zLjggMTQuOC04LjIuNi0xLjItLjMtMi41LTEuMy0xLjciLz48L2c+PC9nPjwvc3ZnPg==&quot;) !important;background-position: center center !important;background-repeat: no-repeat !important;border: medium none currentcolor !important;inset: auto !important;clear: none !important;clip: auto !important;counter-increment: none !important;counter-reset: none !important;cursor: auto !important;direction: inherit !important;display: inline-block !important;float: none !important;font-variant-numeric: normal !important;font-variant-east-asian: normal !important;height: 16px !important;line-height: inherit !important;list-style-type: inherit !important;list-style-position: outside !important;list-style-image: none !important;max-height: none !important;min-height: 0px !important;min-width: 0px !important;outline: 0px !important;padding: 0px !important;position: static !important;quotes: &quot;&quot; &quot;&quot; !important;table-layout: auto !important;text-decoration-line: inherit !important;text-rendering: auto !important;unicode-bidi: normal !important;vertical-align: middle !important;visibility: inherit !important;width: 16px !important;z-index: auto !important;background-origin: padding-box !important;background-clip: border-box !important;background-size: contain !important;border-radius: 0px !important;box-shadow: none !important;columns: auto auto !important;column-gap: normal !important;column-rule: medium none rgb(0, 0, 0) !important;-webkit-text-fill-color: currentcolor !important;-webkit-tap-highlight-color: transparent !important;font-feature-settings: normal !important;overflow: visible !important;hyphens: manual !important;-webkit-hyphenate-character: &quot;‐&quot; !important;perspective: none !important;perspective-origin: 50% 50% !important;backface-visibility: visible !important;text-shadow: none !important;transition: all 0s ease 0s !important;-webkit-font-smoothing: subpixel-antialiased !important;user-select: text !important;"></span>`,
+			}
+			models.StoreMessage(&hello)
+			c.Response([]models.Message{hello})
+
+		} else {
+			c.Response(his)
+		}
 	}
-	ap.Note()
-	idleMessage := ap.GetIdleMessage()
+	conn.Note()
+	idleMessage := conn.GetIdleMessage()
 	if idleMessage != nil {
 		c.Response(idleMessage)
 	}
 	i := models.WaittingTime
 	for {
 		select {
-		case m := <-ap.GetMessageChan():
-			ap.Note()
+		case m := <-conn.GetMessageChan():
+			conn.Note()
 			c.Response([]*models.Message{m})
 		case <-time.After(time.Second):
-			ap.Note()
+			conn.Note()
 			if i == 0 {
 				c.Response()
 			} else {
@@ -134,15 +146,4 @@ func (c *MessageController) getAuth() {
 	c.Ctx.Output.Header("uid", fmt.Sprint(u.ID))
 	c.UID = u.ID
 	c.UTP = u.Role
-	if snum := models.ServerNumbers(); snum != 0 {
-		models.StoreMessage(&models.Message{
-			Rid:  u.ID,
-			Data: "当前" + fmt.Sprint(snum) + "客服在线，快来撩吧。",
-		})
-	} else {
-		models.StoreMessage(&models.Message{
-			Rid:  u.ID,
-			Data: "抱歉，客服正骑着共享单车赶往公司呢。",
-		})
-	}
 }

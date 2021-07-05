@@ -2,6 +2,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -27,16 +28,25 @@ func initMaxMessageID() {
 //storeChat 存储消息
 func storeChat() {
 	chatStoreChan = make(chan *Message)
+	//("chatStoreChan = make(chan *Message)")
 	go func() {
 		for m := range chatStoreChan {
+			//("or m := range chatStoreChan {")
 			if m.Type == 1 {
+				//("if m.Type == 1 {")
 				if err := readMessage(m.Fid, m.ID); err != nil {
+					//("if err := readMessage(m.Fid, m.ID); err != nil {")
 					chatStoreChan <- m
+					//("chatStoreChan <- m")
 				}
+				//("if err := readMessage(m.Fid, m.ID); err == nil {")
 			} else {
+				//("} else {")
 				if err := db.Create(m).Error; err != nil {
+					//("if err := db.Create(m).Error; err != nil {")
 					chatStoreChan <- m
 				}
+				//("if err := db.Create(m).Error; err == nil {")
 			}
 		}
 	}()
@@ -72,45 +82,70 @@ type Message struct {
 //HandleMessage 消息处理
 func (u *User) HandleMessage(m *Message) error {
 	m.Time = time.Now().Local().UnixNano()
+	//("m.Time = time.Now().Local().UnixNano()")
 	m.Fid = u.GetID()
-	// 分配客服
+	//("u.GetID()")
 	m.Rid = u.GetRandomServerID(m.Rid)
-	// if m.Rid == 0 {
-	// 	return errors.New("客服不在线")
-	// }
+	//("u.GetRandomServerID(m.Rid)")
 	if m.Rid == 0 && m.Type == 0 {
+		//("if m.Rid == 0 && m.Type == 0 {")
+		if u.GetRole() <= 2 {
+			//("if u.GetRole() <= 2 {")
+			return errors.New("Rid is required.")
+		}
+		//("if u.GetRole() > 2 {")
 		m.ID = generatorNextMessageID()
+		//("m.ID = generatorNextMessageID()")
 		m.Readers = fmt.Sprint(m.Fid)
+		//("m.Readers = fmt.Sprint(m.Fid)")
 		u.Push(m)
+		//("u.Push(m)")
 		chatStoreChan <- m
+		//("chatStoreChan <- m")
 		r := &Message{
 			Rid:  u.GetID(),
-			Data: "客服不在线,请过几分钟后再访问",
+			Data: "Customer service is not online, please visit again in a few minutes.",
 		}
+		//("r := &Message{")
 		r.ID = generatorNextMessageID()
+		//("r.ID = generatorNextMessageID()")
 		r.Time = m.Time
-		// r.Readers = fmt.Sprint(r.Fid)
+		//("r.Time = m.Time")
 		u.Push(r)
+		//("u.Push(r)")
 		chatStoreChan <- r
+		//("chatStoreChan <- r")
 	} else {
 		var r *User
+		//("var r *User")
 		var err error
+		//("var err error")
 		if m.Rid != 0 {
+			//("if m.Rid != 0 {")
 			if r, err = FetchUser(m.Rid); err != nil {
+				//("if r, err = FetchUser(m.Rid); err != nil {")
 				return err
 			}
 		}
 		if m.Type == 0 {
+			//("if m.Type == 0 {")
 			m.ID = generatorNextMessageID()
+			//("m.ID = generatorNextMessageID()")
 			m.Readers = fmt.Sprint(m.Fid)
+			//("m.Readers = fmt.Sprint(m.Fid)")
 		}
 		if m.Rid != 0 {
+			//("if m.Rid != 0 {")
 			r.Push(m)
+			//("r.Push(m)")
 		}
 		u.Push(m)
+		//("u.Push(m)")
 		if m.Type < 2 {
+			//("if m.Type < 2 {")
 			chatStoreChan <- m
 		}
+		//("?????")
 	}
 	return nil
 }
@@ -126,6 +161,7 @@ type Connection interface {
 	Push(m *Message)
 	Destroy()
 	GetUser() *User
+	GetRandom() string
 }
 
 //readMessage 阅读消息

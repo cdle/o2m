@@ -6,13 +6,12 @@ import (
 	"os"
 
 	"github.com/astaxie/beego"
-	"github.com/cdle/steady"
 )
 
 var index []byte
 
 func init() {
-	f, err := os.Open(steady.ExecPath + "/www/index.html")
+	f, err := os.Open(beego.AppConfig.String("www") + `\index.html`)
 	if err != nil {
 		return
 	}
