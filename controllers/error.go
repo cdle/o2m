@@ -11,9 +11,9 @@ import (
 var index []byte
 
 func init() {
-	f, err := os.Open(beego.AppConfig.String("www") + `\index.html`)
+	f, err := os.Open(beego.AppConfig.String("www") + `/index.html`)
 	if err != nil {
-		panic(err)
+		return
 	}
 	index, _ = ioutil.ReadAll(f)
 }
