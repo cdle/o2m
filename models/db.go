@@ -3,7 +3,7 @@ package models
 
 import (
 	"github.com/gofrs/uuid"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -28,9 +28,15 @@ func init() {
 	// db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 	// 	Logger: logger.Default.LogMode(logger.Info),
 	// })
-	db, err = gorm.Open(sqlite.Open("o2m.db"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+	// db, err = gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=postgres sslmode=disable password=AsdF321@postgres")
+	db, err = gorm.Open(postgres.Open("host=localhost port=5432 user=postgres dbname=o2m sslmode=disable password=AsdF321@postgres TimeZone=Asia/Shanghai"),
+		&gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		},
+	)
+	// db, err = gorm.Open(sqlite.Open("o2m.db"), &gorm.Config{
+	// 	Logger: logger.Default.LogMode(logger.Info),
+	// })
 	if err != nil {
 		panic(err)
 	}
